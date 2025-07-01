@@ -1,34 +1,76 @@
 name: "Python Uv Login"
-description: "A simple GitHub Action that prints a greeting"
-author: "Jimmie Fulton <jimmie.fulton@gmail.com>"
+description: "A Github action that logs in to one or more Python repositories using uv."
+author: "Jimmie Fulton <jimmie@ybor.ai>"
 
 # Define the inputs for this action
 inputs:
-  who-to-greet:
-    description: "Who to greet"
+  credentials:
+    description: "A registry=user:password mapping of registry aliases with their corresponding http-basic auth credentials. One per line."
     required: true
-    default: "World"
-  message:
-    description: "Custom message to include"
-    required: false
-    default: "Hello"
-
-# Define the outputs for this action
-outputs:
-  time:
-    description: "The time we greeted you"
-    value: ${{ steps.hello.outputs.time }}
 
 # Define the runs configuration
 runs:
   using: "composite"
   steps:
-    - name: Hello step
-      id: hello
+    - name: Configure uv authentication
+      id: configure-auth
       shell: bash
       run: |
-        echo "${{ inputs.message }}, ${{ inputs.who-to-greet }}!"
-        echo "time=$(date)" >> $GITHUB_OUTPUT
+        # Backup existing .netrc if it exists
+        if [ -f ~/.netrc ]; then
+          cp ~/.netrc ~/.netrc.backup
+          echo "Existing .netrc backed up to ~/.netrc.backup"
+        fi
+
+        # Ensure .netrc exists and has correct permissions
+        touch ~/.netrc || { echo "Error: Failed to create .netrc file"; exit 1; }
+        chmod 600 ~/.netrc || { echo "Error: Failed to set .netrc permissions"; exit 1; }
+
+        # Validate credentials input
+        if [ -z '${{ inputs.credentials }}' ]; then
+          echo "Error: No credentials provided"
+          exit 1
+        fi
+
+        # Configure authentication credentials
+        echo '${{ inputs.credentials }}' | while IFS='=' read -r registry auth; do
+          # Skip empty lines
+          if [ -z "$registry" ] || [ -z "$auth" ]; then
+            continue
+          fi
+          
+          # Parse username and password
+          IFS=':' read -r username password <<< "$auth"
+          if [ -z "$username" ] || [ -z "$password" ]; then
+            echo "Warning: Invalid credentials format for $registry (expected format: registry=user:password)"
+            continue
+          fi
+          
+          # Simple hostname mapping for common registries
+          case "$registry" in
+            "pypi")
+              hostname="upload.pypi.org"
+              ;;
+            "testpypi")
+              hostname="test.pypi.org"
+              ;;
+            *)
+              # Use registry name directly as hostname
+              hostname="$registry"
+              ;;
+          esac
+          
+          # Add credentials to .netrc
+          echo "machine $hostname login $username password $password" >> ~/.netrc
+          if [ $? -eq 0 ]; then
+            echo "✓ Credentials configured for $registry ($hostname)"
+          else
+            echo "Error: Failed to write credentials for $registry"
+            exit 1
+          fi
+        done
+
+        echo "Authentication setup completed successfully"
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
