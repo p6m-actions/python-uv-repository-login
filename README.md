@@ -1,6 +1,6 @@
-# Python Uv Login
+# Python uv Repository Login
 
-![Latest Release](https://img.shields.io/github/v/release/p6m-actions/python-uv-login?style=flat-square&label=Latest%20Release&color=blue)
+![Latest Release](https://img.shields.io/github/v/release/p6m-actions/python-uv-repository-login?style=flat-square&label=Latest%20Release&color=blue)
 
 ## Description
 
@@ -11,7 +11,7 @@ A GitHub Action that logs in to one or more Python repositories using uv. This a
 Add this action to your workflow to configure uv with authentication credentials:
 
 ```yaml
-- uses: p6m-actions/python-uv-login@v1
+- uses: p6m-actions/python-uv-repository-login@v1
   with:
     credentials: |
       pypi=username:password
@@ -32,7 +32,7 @@ Add this action to your workflow to configure uv with authentication credentials
 - name: Setup uv
   uses: astral-sh/setup-uv@v3
 - name: Login to PyPI
-  uses: p6m-actions/python-uv-login@v1
+  uses: p6m-actions/python-uv-repository-login@v1
   with:
     credentials: |
       pypi=username:password
@@ -44,7 +44,7 @@ Add this action to your workflow to configure uv with authentication credentials
 - name: Setup uv
   uses: astral-sh/setup-uv@v3
 - name: Login to Python Repositories
-  uses: p6m-actions/python-uv-login@v1
+  uses: p6m-actions/python-uv-repository-login@v1
   with:
     credentials: |
       pypi=username:password
