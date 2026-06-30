@@ -73,7 +73,7 @@ It's recommended to use GitHub Secrets for storing credentials:
   with:
     credentials: |
       pypi=${{ secrets.PYPI_CREDENTIALS }}
-      artifactory.company.com=user:${{ secrets.ARTIFACTORY_TOKEN }}
+      artifactory.company.com=user:${{ secrets.P6M_ARTIFACTORY_TOKEN }}
 ```
 
 ## How It Works
